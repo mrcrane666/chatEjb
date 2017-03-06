@@ -10,8 +10,12 @@ import org.junit.Test;
 
 public class TestChat {
 
+	/**
+	 * Tests the chechCommand() method for all possible emoticons and if they
+	 * are translated correctly
+	 */
 	@Test
-	public void testCheckCommandClass() {
+	public void testCheckCommand() {
 		ChatInterface chat = new ChatBean();
 
 		SimpleEntry<String, String> result = chat.checkForCommands("/cat");
@@ -32,15 +36,15 @@ public class TestChat {
 		assertTrue("checkForCommand() failed at /rose", dummy.equals(result));
 
 		result = chat.checkForCommands("/highfive");
-		dummy =new SimpleEntry<String, String>("emoti", "o/ \\o"); 
-		assertTrue("checkForCommand() failed at /highfive", dummy.equals(result));
-
-		result = chat
-				.checkForCommands("/tell wasuser testetstestetstteststetestestes");
-		dummy = new SimpleEntry<String, String>("wasuser", "testetstestetstteststetestestes");
-		assertTrue("checkForCommand() failed at /tell", dummy.equals(result));
+		dummy = new SimpleEntry<String, String>("emoti", "o/ \\o");
+		assertTrue("checkForCommand() failed at /highfive",
+				dummy.equals(result));
 	}
 
+	/**
+	 * Tests if the addMessage() method adds the Messages to the list without
+	 * messing anything up.
+	 */
 	@Test
 	public void testAddMessages() {
 		ChatInterface chat = new ChatBean();
@@ -65,15 +69,73 @@ public class TestChat {
 		}
 	}
 
+	/**
+	 * Tests checkForCommands() in case of private Messages with, without, and
+	 * with mutiple emoticons
+	 */
 	@Test
-	public void testErrMessade() {
+	public void testPrivateChat() {
 		ChatInterface chat = new ChatBean();
-		LinkedList<String> dummyList = new LinkedList<String>();
-		String dummyUser1 = "user";
-		String dummyTime1 = "time";
-		String dummyMessage1 = "/ImNotA_Command";
-		dummyList.add(dummyUser1 + " - " + dummyTime1 + ": " + dummyMessage1);
-		chat.addMessage(dummyUser1, dummyTime1, dummyMessage1);
-		assertTrue("ErrMessage was not set!", !chat.getErrMessage().equals(""));
+		// Test without emotis
+		String dummyTarget = "target";
+		String dummyMessage1 = "/tell " + dummyTarget + " haaaaaaaaaaallloooo";
+
+		SimpleEntry<String, String> dummyResult = new SimpleEntry<String, String>(
+				dummyTarget, "haaaaaaaaaaallloooo");
+
+		SimpleEntry<String, String> result = chat
+				.checkForCommands(dummyMessage1);
+
+		assertTrue("The tragetUsername was not the same!", dummyResult.getKey()
+				.equals(result.getKey()));
+		assertTrue("The message was not the same! => " + dummyResult.getValue()
+				+ " != " + result.getValue(),
+				dummyResult.getValue().equals(result.getValue()));
+
+		// Test with one emoti
+		dummyMessage1 = "/tell " + dummyTarget + " /cat";
+		dummyResult = new SimpleEntry<String, String>(dummyTarget, "=^_^=");
+		result = chat.checkForCommands(dummyMessage1);
+		assertTrue("The tragetUsername was not the same!", dummyResult.getKey()
+				.equals(result.getKey()));
+		assertTrue("The message was not the same! => " + dummyResult.getValue()
+				+ " != " + result.getValue(),
+				dummyResult.getValue().equals(result.getValue()));
+
+		// Test with two emoti
+		dummyMessage1 = "/tell " + dummyTarget + " /cat /cat";
+		dummyResult = new SimpleEntry<String, String>(dummyTarget,
+				"=^_^= =^_^=");
+		result = chat.checkForCommands(dummyMessage1);
+		assertTrue("The tragetUsername was not the same!", dummyResult.getKey()
+				.equals(result.getKey()));
+		assertTrue("The message was not the same! => " + dummyResult.getValue()
+				+ " != " + result.getValue(),
+				dummyResult.getValue().equals(result.getValue()));
+
+	}
+
+	/**
+	 * Trys to cause an error Message with wrong commands
+	 */
+	@Test
+	public void checkWrongCommands() {
+		ChatInterface chat = new ChatBean();
+		String dummyUser = "user";
+		String dummyTime = "time";
+		String fakeCommand = "";
+
+		// A wrong command
+		fakeCommand = "/im_not_command";
+		chat.addMessage(dummyUser, dummyTime, fakeCommand);
+		assertTrue("Error message was not set!",
+				!chat.getErrMessage().equals(""));
+
+		// A wrong /tell command like /tell123
+		fakeCommand = "/tell123";
+		chat.addMessage(dummyUser, dummyTime, fakeCommand);
+		assertTrue("Error message was not set!",
+				!chat.getErrMessage().equals(""));
+
 	}
 }

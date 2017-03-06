@@ -45,7 +45,7 @@ public class ChatBean implements ChatInterface {
 	@Override
 	public void addMessage(String username, String time, String pMessage) {
 		SimpleEntry<String, String> messageChecked = checkForCommands(pMessage);
-		if (messageChecked.getKey() != null) {
+		if (messageChecked != null) {
 			if (!messageChecked.getKey().equals("message")) {
 				if (messageChecked.getKey().equals("emoti")) {
 					messages.add(username + " - " + time + ": "
@@ -91,20 +91,25 @@ public class ChatBean implements ChatInterface {
 	@Override
 	public SimpleEntry<String, String> checkForCommands(String message) {
 		if (message.startsWith("/")) {
+			if (message.startsWith("/tell ")) {
+				String tmp = message.substring(0, MAX_LENGTH_COMMANDS);
+				for (String c : commands) {
+					if (c.equals(tmp)) {
+						// if its a private message
+						return processCommand(message, c);
+					}
+				}
+			}
+
 			String emoti = checkForEmoticons(message);
 			if (null != emoti) {
 				// if its a emoti
 				return new SimpleEntry<String, String>("emoti", emoti);
 			}
-			String tmp = message.substring(0, MAX_LENGTH_COMMANDS);
-			for (String c : commands) {
-				if (c.equals(tmp)) {
-					// if its a private message
-					return processCommand(message, c);	
-				}
-			}
+
 			// If there is not such a command
-			return new SimpleEntry<String, String>(null, null);
+			System.err.println("err");
+			return null;
 
 		} else {
 			// if its just a message
@@ -113,22 +118,40 @@ public class ChatBean implements ChatInterface {
 
 	}
 
+	/**
+	 * Returns the input message with all emoties replaced with the acsii ones.
+	 * 
+	 * @return null in case of no emoties, else message with emoties replaced
+	 */
 	@Override
 	public String checkForEmoticons(String command) {
 		Set<String> emos = emoticons.keySet();
+		String convertedMessage = command;
 		for (int i = 0; i < emoticons.size(); i++) {
-			if (command.contains(emos.toArray()[i].toString())) {
-				String convertedMessage = command.replace(
+			if (convertedMessage.contains(emos.toArray()[i].toString())) {
+				convertedMessage = convertedMessage.replace(
 						emos.toArray()[i].toString(),
 						emoticons.get(emos.toArray()[i].toString()));
-				return convertedMessage;
 			}
 		}
-		return null;
+		if (convertedMessage.equals(command)) {
+			return null;
+		} else {
+			return convertedMessage;
+		}
 
 	}
-	//Hier oder so noch ein fehler weil bei /tell usetrname /cat imemrnoch /tell username steht!
-	
+
+	/**
+	 * Returns a SimpleEntry with the the tragetuseranem and the message and it
+	 * checks for emoticons in the message!
+	 * 
+	 * @param message
+	 *            message with all commands
+	 * @param command
+	 *            command which will be processed
+	 * @return SimpleEntry(targetUser, message)
+	 */
 	private SimpleEntry<String, String> processCommand(String message,
 			String command) {
 		if (command.equals("/tell")) {
@@ -142,7 +165,7 @@ public class ChatBean implements ChatInterface {
 			SimpleEntry<String, String> entry = new SimpleEntry<String, String>(
 					username, pureMessage);
 			String checkedPureMessage = checkForEmoticons(pureMessage);
-			if(checkedPureMessage != null){
+			if (checkedPureMessage != null) {
 				entry.setValue(checkedPureMessage);
 			}
 

@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 public interface ChatInterface {
 
-	public void addMessage(String pMessage, String username, String time);
+	public void addMessage(String username, String time, String message);
 
 	public ArrayList<String> getMessages();
 	
